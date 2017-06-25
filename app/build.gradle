@@ -1,0 +1,96 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.getkeepsafe.dexcount'
+
+def versionMajor = 0
+def versionMinor = 1
+def versionPatch = 0
+def appVersionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+def appVersionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+
+// "User-Agent: andere/1.0.0 by simonnorberg"
+def userAgent = StringBuilder.newInstance('User-Agent: ')
+userAgent << project.findProperty('reddit_client_name') ?: 'null'
+userAgent << '/' << appVersionName << ' by '
+userAgent << project.findProperty('reddit_dev') ?: 'null'
+
+def clientId = project.findProperty('reddit_client_id') ?: 'null'
+
+def gitSha() {
+  def p = 'git rev-parse --short HEAD'.execute([], project.rootDir)
+  p.waitFor()
+  if (p.exitValue() != 0) {
+    throw new RuntimeException(p.errorStream.text)
+  }
+
+  return p.text.trim()
+}
+
+def gitTimestamp() {
+  def p = 'git log -n 1 --format=%at'.execute([], rootDir)
+  p.waitFor()
+  if (p.exitValue() != 0) {
+    throw new RuntimeException(p.errorStream.text)
+  }
+
+  return p.text.trim()
+}
+
+android {
+  compileSdkVersion 26
+  buildToolsVersion "26.0.0"
+  defaultConfig {
+    applicationId "net.simno.andere"
+    minSdkVersion 26
+    targetSdkVersion 26
+
+    versionCode appVersionCode
+    versionName appVersionName
+
+    buildConfigField 'String', 'GIT_SHA', "\"${gitSha()}\""
+    buildConfigField 'long', 'GIT_TIMESTAMP', "${gitTimestamp()}L"
+    buildConfigField 'String', 'REDDIT_USER_AGENT', "\"${userAgent.toString()}\""
+    buildConfigField 'String', 'REDDIT_CLIENT_ID', "\"${clientId}\""
+
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+kapt {
+  generateStubs = true
+}
+
+dependencies {
+  implementation "com.android.support:appcompat-v7:$support_version"
+  implementation "com.android.support:recyclerview-v7:$support_version"
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+  implementation "com.google.dagger:dagger:$dagger_version"
+  kapt "com.google.dagger:dagger-compiler:$dagger_version"
+  compileOnly "javax.annotation:jsr250-api:$jsr250_version"
+
+  implementation "com.jakewharton.timber:timber:$timber_version"
+
+  implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+  implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+  implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+  implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+  implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+
+  implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
+  implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
+}
