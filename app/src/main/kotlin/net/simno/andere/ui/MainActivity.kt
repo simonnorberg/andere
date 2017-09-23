@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
         })
   }
 
-  fun authorize(): Single<String> {
+  private fun authorize(): Single<String> {
     return Single.defer {
       val token = prefs.getString("token", "")
       val expires = Instant.ofEpochMilli(prefs.getLong("expires", 0))
@@ -84,9 +84,9 @@ class MainActivity : AppCompatActivity() {
 
       authService.accessToken(Credentials.basic(BuildConfig.REDDIT_CLIENT_ID, ""),
           "https://oauth.reddit.com/grants/installed_client", "DO_NOT_TRACK_THIS_DEVICE")
-          .doOnSuccess { token ->
-            prefs.putString("token", token.access_token)
-            prefs.putLong("expires", Instant.now().plusSeconds(token.expires_in).toEpochMilli())
+          .doOnSuccess {
+            prefs.putString("token", it.access_token)
+            prefs.putLong("expires", Instant.now().plusSeconds(it.expires_in).toEpochMilli())
           }
           .map(Auth::access_token)
     }

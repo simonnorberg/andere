@@ -39,7 +39,7 @@ def gitTimestamp() {
 
 android {
   compileSdkVersion 26
-  buildToolsVersion "26.0.0"
+  buildToolsVersion "26.0.1"
   defaultConfig {
     applicationId "net.simno.andere"
     minSdkVersion 26

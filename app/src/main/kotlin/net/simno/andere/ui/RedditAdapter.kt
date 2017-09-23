@@ -9,7 +9,7 @@ import net.simno.andere.R
 import net.simno.andere.data.model.Listing
 import java.util.Collections
 
-class RedditAdapter(val itemClick: (Int) -> Unit) :
+class RedditAdapter(private val itemClick: (Int) -> Unit) :
     RecyclerView.Adapter<RedditAdapter.ViewHolder>() {
 
   var items: List<Listing> = Collections.emptyList()
@@ -25,7 +25,8 @@ class RedditAdapter(val itemClick: (Int) -> Unit) :
 
   override fun getItemCount() = items.size
 
-  class ViewHolder(view: View, val itemClick: (Int) -> Unit) : RecyclerView.ViewHolder(view) {
+  class ViewHolder(view: View, private val itemClick: (Int) -> Unit) :
+      RecyclerView.ViewHolder(view) {
     fun bind(listing: Listing) {
       with(listing) {
         itemView.listingText.text = listing.data.title
